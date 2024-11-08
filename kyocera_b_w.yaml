@@ -1,0 +1,212 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+    - uuid: 0431e3da8ecc4ab2ab4d66dd40ea44b1
+      name: MFU
+  templates:
+    - uuid: f31b405fc90c47d88879f6407cd9824c
+      template: Kyocera_monochrome
+      name: 'Ч/Б МФУ Kyocera'
+      description: |
+        ## Overview
+        
+        Шаблон для мониторинга Ч/Б  МФУ Kyocera
+      groups:
+        - name: MFU
+      items:
+        - uuid: 99d106f0f3574c7ab83e89fcd82d3f04
+          name: 'Модель картриджа'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.43.11.1.1.6.1.1
+          key: cartridge.model
+          delay: 1h
+          history: 90d
+          trends: '0'
+          value_type: TEXT
+          tags:
+            - tag: Application
+              value: cartridge
+            - tag: Application
+              value: 'printer information'
+        - uuid: d0b8ae1379c545eeb91259ae03ce2b93
+          name: 'Откопировано страниц'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.4.1.1347.42.3.1.3.1.1.2
+          key: copy.pages
+          delay: 10m
+          history: 365d
+        - uuid: 3da5f772c3ad43aea87c3572af4d82e2
+          name: 'Код ошибки'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.25.3.5.1.2.1
+          key: error.printer
+          delay: 10s
+          history: 90d
+          trends: '0'
+          value_type: CHAR
+          triggers:
+            - uuid: 1cb51d2d57534ad9a43c9a9ce1967502
+              expression: last(/Kyocera_monochrome/error.printer)=5
+              name: 'Бумага застряла в принтере. Нужно вытащить бумагу'
+              priority: INFO
+            - uuid: 746726945e064529bd44576fbfa61d7e
+              expression: last(/Kyocera_monochrome/error.printer)=06
+              name: 'Замятие бумаги. Произошла ошибка.'
+              priority: INFO
+            - uuid: 2eddf42eb05049b180404d4d83be84a3
+              expression: last(/Kyocera_monochrome/error.printer)=7
+              name: 'Необходим сервис. Требуется внимание специалиста.'
+              priority: HIGH
+            - uuid: 0b6d4b5721b04943abb5bf3147a1d5bd
+              expression: last(/Kyocera_monochrome/error.printer)=1
+              name: 'Нет бумаги в принтере'
+              priority: INFO
+            - uuid: d11595e03b934c9982dc3902ee0cefe3
+              expression: last(/Kyocera_monochrome/error.printer)=4
+              name: 'Открыта дверца принтера'
+              priority: INFO
+            - uuid: 45f260bb688e4f3798c7e2ae64bc978c
+              expression: last(/Kyocera_monochrome/error.printer)=1
+              name: 'Узел проявки не установлен или принтер требует внимания'
+              priority: HIGH
+        - uuid: 679f5f588aed48618864736f31267e3b
+          name: 'Осталось распечатать страниц'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.43.11.1.1.9.1.1
+          key: left.printed.pages
+          history: 365d
+          tags:
+            - tag: Application
+              value: cartridge
+        - uuid: 76e6f4103f7745f9920cefbc6f18b5f7
+          name: 'MAC адрес'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.6.1
+          key: mac.printer
+          delay: 24h
+          history: 90d
+          trends: '0'
+          value_type: CHAR
+          inventory_link: MACADDRESS_A
+          tags:
+            - tag: Application
+              value: 'printer information'
+        - uuid: 392b0d6959b448778c7a6740cc26d1ea
+          name: 'Ресурс картриджа страниц'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.43.11.1.1.8.1.1
+          key: max.toner.pages
+          delay: 24h
+          history: 90d
+          tags:
+            - tag: Application
+              value: cartridge
+        - uuid: f3c440b300364657ac99410a1425518e
+          name: 'Модель принтера'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.43.5.1.1.16.1
+          key: model.printer
+          delay: 24h
+          history: 90d
+          trends: '0'
+          value_type: TEXT
+          inventory_link: TYPE
+          tags:
+            - tag: Application
+              value: 'printer information'
+        - uuid: 62045a3408734a7bb8d09bd0062bc1ee
+          name: 'Отпечатано страниц'
+          type: CALCULATED
+          key: printed.pages
+          params: last(//printed.pages.total)-last(//copy.pages)
+        - uuid: f3933a1e2d1e4c889c7226c0615de2a6
+          name: 'Отпечатано страниц всего'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1347.43.10.1.1.12.1.1
+          key: printed.pages.total
+          delay: 10m
+          history: 365d
+          trends: '0'
+        - uuid: 4839555bf8fb4a8a87e5a6975248eeb1
+          name: 'Отсканировано и откопировано страниц'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1347.46.10.1.1.5.3
+          key: scan.copy.pages.total
+          delay: 1h
+          history: 90d
+        - uuid: 7ba5a851d8754148895402b305972e39
+          name: 'Отсканировано страниц'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.4.1.1347.42.3.1.4.1.1.1
+          key: scan.pages
+          delay: 1h
+          history: 90d
+        - uuid: c23549cdb4ba4d50a2f369de1fcf3108
+          name: 'Серийный номер'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.43.5.1.1.17.1
+          key: serialnumber.ptinter
+          delay: 24h
+          history: 90d
+          trends: '0'
+          value_type: TEXT
+          tags:
+            - tag: Application
+              value: 'printer information'
+        - uuid: 15b934f6539c4b918b34005e8bd80c03
+          name: 'Уровень тонера %'
+          type: CALCULATED
+          key: toner.level
+          delay: 10m
+          history: 180d
+          units: '%'
+          params: '100*last(//left.printed.pages)/last(//max.toner.pages)'
+          tags:
+            - tag: Application
+              value: 'toner level'
+          triggers:
+            - uuid: 36dbd82bf3f5445fbf27502ee280d6b2
+              expression: 'last(/Kyocera_monochrome/toner.level,#3)<10'
+              name: critical.toner.level
+              priority: HIGH
+            - uuid: ee961e58b8d6443c80705d50afae652b
+              expression: 'last(/Kyocera_monochrome/toner.level,#3)<20'
+              name: lower.toner.level
+              event_name: 'Уровень чёрного тонера меньше 20%'
+              priority: WARNING
+        - uuid: 2c23852ca0a448d0ba9b3c6cda9a868e
+          name: 'Время работы'
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: uptime.printer
+          delay: '60'
+          history: 90d
+          trends: '0'
+          units: s
+          preprocessing:
+            - type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            - tag: Application
+              value: 'printer information'
+  graphs:
+    - uuid: aa1bca05f13b4574863e819f071745a5
+      name: 'Распечатано страниц'
+      graph_items:
+        - color: 199C0D
+          calc_fnc: ALL
+          item:
+            host: Kyocera_monochrome
+            key: printed.pages.total
+    - uuid: 7ac7287a6511493985b85b79330c6755
+      name: 'Уровень чёрного тонера'
+      width: '200'
+      ymin_type_1: FIXED
+      ymax_type_1: FIXED
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: '000000'
+          item:
+            host: Kyocera_monochrome
+            key: toner.level
